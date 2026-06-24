@@ -1,0 +1,4 @@
+*.log
+data/hours/*.json
+test_*.php
+.DS_Store

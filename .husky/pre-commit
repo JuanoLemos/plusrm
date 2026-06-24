@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# ── Diligencia: Documental integrity check ──
+npm run check-docs
+
+# ── Your project hooks below ──
+# npx lint-staged

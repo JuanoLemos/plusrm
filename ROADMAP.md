@@ -1,0 +1,38 @@
+# ROADMAP — +RM
+
+---
+
+## Ahora (Now)
+
+| ID | Item | Prioridad | Estado | Depende de |
+|----|------|-----------|--------|------------|
+| R03 | Logs de horas: sistema de registro y lectura JSON | P1 | 🟡 En progreso | R01 |
+| R04 | Estimador HS → días: cálculo según promedio diario | P2 | 🔴 Pendiente | R03, R05 |
+| R05 | Dashboard UI: frontend completo con tablas, barras, badges y vista multi-formato | P2 | 🟡 En progreso | — |
+
+## Siguiente (Next)
+
+| ID | Item | Prioridad | Estado | Depende de |
+|----|------|-----------|--------|------------|
+| R08 | Registro de horas desde el dashboard (UI para log JSON) | P2 | 🔴 Pendiente | R03 |
+| R09 | Exportación de reportes (PDF/CSV) | P3 | 🔴 Pendiente | R05 |
+| R10 | Alertas de deadline / retraso | P3 | 🔴 Pendiente | R04 |
+
+## Futuro (Later)
+
+| ID | Item | Prioridad | Estado | Depende de |
+|----|------|-----------|--------|------------|
+| R11 | Multi-usuario / permisos | P3 | 🔴 Pendiente | — |
+| R12 | Histórico de cambios por proyecto | P3 | 🔴 Pendiente | — |
+
+## Completado
+
+| Item | Instancia |
+|------|-----------|
+| R01 — Detección de proyectos (Scanner) | v0.1.0 |
+| R02 — Parser de roadmap (RoadmapParser) | v0.1.0 |
+| R06 — API REST endpoints PHP | v0.1.0 |
+| R07 — Config (config.php + directorios) | v0.1.0 |
+| R13 — Parser multi-formato (estándar + extendido) | v0.2.0 |
+| R14 — ProjectInfoReader (7 docs: CHANGELOG, DILIGENCIA, ADR, SISTEMA, bugs, incidents, CHECKLIST) | v0.2.0 |
+| R15 — Dashboard enriquecido (badges: version, ADRs, bugs, stack) | v0.2.0 |

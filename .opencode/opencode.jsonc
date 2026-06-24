@@ -1,0 +1,12 @@
+{
+  "instructions": [
+    "Siempre responde en español.",
+    "Antes de /version, ejecutar PRE-FLIGHT completo: staleness, salud, scope, template sync, cross-refs, variables.",
+    "Mantener INDEX.md, CHANGELOG.md y DILIGENCIA.md versionados en sync.",
+    "Ejecutar node scripts/check-docs.js tras cambios documentales mayores.",
+    "No incluir versiones de metodología en headers de documentos de proyecto.",
+    "Referenciar archivos mediante $VARIABLES de AGENTS.md, no rutas hardcodeadas.",
+    "Verificar que todos los $VARIABLES en AGENTS.md resuelvan a archivos existentes antes de commit.",
+    "BUILD = aplicar cambios, NO commitear. Solo /commit, /CBP y /version ejecutan git commit."
+  ]
+}
