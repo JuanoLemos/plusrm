@@ -7,16 +7,33 @@ class Scanner
 {
     private array $scanDirs;
     private int $depth;
+    private array $extraPaths;
 
-    public function __construct(array $scanDirs, int $depth = 1)
+    public function __construct(array $scanDirs, int $depth = 1, array $extraPaths = [])
     {
         $this->scanDirs = $scanDirs;
         $this->depth = max(1, $depth);
+        $this->extraPaths = $extraPaths;
     }
 
     public function scan(): array
     {
         $projects = [];
+
+        foreach ($this->extraPaths as $ep) {
+            $resolved = $this->resolvePath($ep);
+            if ($resolved === null) {
+                continue;
+            }
+            $this->detectProject($resolved, $projects, true);
+            if (!in_array($resolved, $this->scanDirs)) {
+                $entries = $this->getDirectories($resolved, 1, 0);
+                foreach ($entries as $entry) {
+                    $this->detectProject($entry, $projects, true);
+                }
+            }
+        }
+
         foreach ($this->scanDirs as $dir) {
             $expanded = $this->resolvePath($dir);
             if (!$expanded || !is_dir($expanded)) {
@@ -24,36 +41,50 @@ class Scanner
             }
             $entries = $this->getDirectories($expanded, $this->depth, 0);
             foreach ($entries as $entry) {
-                $rmPath = $entry . '\ROADMAP.md';
-                if (is_file($rmPath)) {
-                    $parser = new RoadmapParser();
-                    $roadmap = $parser->parse($rmPath);
-                    $name = $roadmap['projectName'] ?? basename($entry);
+                $this->detectProject($entry, $projects, true);
+            }
+        }
 
-                    $reader = new ProjectInfoReader($entry);
-                    $info = $reader->read();
-                    $parser = new RoadmapParser();
+        return $projects;
+    }
 
-                    $projects[] = [
-                        'name' => $name,
-                        'path' => $entry,
-                        'roadmapPath' => $rmPath,
-                        'version' => $info['version'],
-                        'diligencia' => $info['diligencia'],
-                        'stack' => $info['stack'],
-                        'adrs' => $info['adrs'],
-                        'bugs' => $info['bugs'],
-                        'incidents' => $info['incidents'],
-                        'stats' => $roadmap['stats'] ?? [
-                            'total' => 0, 'done' => 0, 'inProgress' => 0, 'pending' => 0, 'blocked' => 0, 'completionPercent' => 0,
-                        ],
-                        'format' => $roadmap['format'] ?? 'standard',
-                        'docs' => $info['docs'],
-                    ];
+    private function detectProject(string $dirPath, array &$projects, bool $skipDuplicates = false): void
+    {
+        $rmPath = $dirPath . '\ROADMAP.md';
+        if (!is_file($rmPath)) {
+            return;
+        }
+        if ($skipDuplicates) {
+            foreach ($projects as $p) {
+                if ($p['path'] === $dirPath) {
+                    return;
                 }
             }
         }
-        return $projects;
+
+        $parser = new RoadmapParser();
+        $roadmap = $parser->parse($rmPath);
+        $name = $roadmap['projectName'] ?? basename($dirPath);
+
+        $reader = new ProjectInfoReader($dirPath);
+        $info = $reader->read();
+
+        $projects[] = [
+            'name' => $name,
+            'path' => $dirPath,
+            'roadmapPath' => $rmPath,
+            'version' => $info['version'],
+            'diligencia' => $info['diligencia'],
+            'stack' => $info['stack'],
+            'adrs' => $info['adrs'],
+            'bugs' => $info['bugs'],
+            'incidents' => $info['incidents'],
+            'stats' => $roadmap['stats'] ?? [
+                'total' => 0, 'done' => 0, 'inProgress' => 0, 'pending' => 0, 'blocked' => 0, 'completionPercent' => 0,
+            ],
+            'format' => $roadmap['format'] ?? 'standard',
+            'docs' => $info['docs'],
+        ];
     }
 
     public function isPathAllowed(string $path): bool

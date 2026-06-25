@@ -18,6 +18,9 @@ class RoadmapParser
         if ($format === 'extended') {
             return $this->parseExtended($lines, $projectName);
         }
+        if ($format === 'domain-h3') {
+            return $this->parseDomainH3($lines, $projectName);
+        }
         return $this->parseStandard($lines, $projectName);
     }
 
@@ -30,8 +33,8 @@ class RoadmapParser
         $lower = mb_strtolower($joined);
 
         $hasStandard = (
-            preg_match('/^##\s*(ahora|siguiente|futuro|completado)/ium', $joined) ||
-            preg_match('/^##\s*(now|next|later|done|completed)/ium', $joined)
+            preg_match('/^##\s*(ahora|siguiente|futuro)/ium', $joined) ||
+            preg_match('/^##\s*(now|next|later)/ium', $joined)
         );
 
         $hasExtended = (
@@ -40,6 +43,13 @@ class RoadmapParser
             preg_match('/^##\s*ux\b/ium', $joined)
         );
 
+        $hasDomainH3 = (
+            preg_match('/^###\s*(now|next|later|ahora|siguiente|futuro)/ium', $joined)
+        );
+
+        if ($hasDomainH3 && !$hasStandard) {
+            return 'domain-h3';
+        }
         if ($hasExtended && !$hasStandard) {
             return 'extended';
         }
@@ -54,7 +64,9 @@ class RoadmapParser
                 return trim($m[1]);
             }
             if (preg_match('/^#\s+(.+)$/', $trimmed, $m)) {
-                return trim($m[1]);
+                $name = trim($m[1]);
+                $name = preg_replace('/\s+[—–-]\s*Roadmap.*$/ui', '', $name);
+                return trim($name);
             }
         }
         return 'Unknown';
@@ -114,6 +126,124 @@ class RoadmapParser
             'sections' => [],
             'stats' => $stats,
         ];
+    }
+
+    private function parseDomainH3(array $lines, string $projectName): array
+    {
+        $sections = ['now' => [], 'next' => [], 'later' => [], 'done' => []];
+        $domainSections = [];
+        $currentDomain = null;
+        $currentPhase = null;
+        $domainItems = [];
+
+        foreach ($lines as $line) {
+            $trimmed = trim($line);
+
+            if (preg_match('/^##\s+(.+)$/', $trimmed, $m)) {
+                $this->flushDomainItems($currentDomain, $currentPhase, $sections, $domainSections, $domainItems);
+                $currentDomain = trim($m[1]);
+                $currentPhase = null;
+                $domainItems = [];
+                continue;
+            }
+
+            if (preg_match('/^###\s+(.+)$/', $trimmed, $m)) {
+                if ($currentDomain !== null) {
+                    $this->flushPhaseItems($currentPhase, $sections, $domainItems);
+                }
+                $currentPhase = $this->normalizePhaseH3($m[1]);
+                continue;
+            }
+
+            if ($currentPhase !== null && preg_match('/^-\s*\[\s*(x|X| )\s*\]\s*(.+)$/', $trimmed, $m)) {
+                $done = strtolower($m[1]) === 'x';
+                $label = $done ? 'Completado' : 'Pendiente';
+                $progress = $done ? 100 : 0;
+                $domainItems[] = [
+                    'id' => '',
+                    'item' => trim($m[2]),
+                    'priority' => '',
+                    'status' => ['label' => $label, 'progress' => $progress, 'raw' => $trimmed],
+                    'dependsOn' => null,
+                    'domain' => $currentDomain,
+                ];
+            }
+        }
+
+        $this->flushPhaseItems($currentPhase, $sections, $domainItems);
+
+        $sections['done'] = $this->parseStandardDoneCheckboxes($lines);
+
+        $stats = $this->computeStats($sections);
+
+        return [
+            'projectName' => $projectName,
+            'format' => 'domain-h3',
+            'now' => $sections['now'],
+            'next' => $sections['next'],
+            'later' => $sections['later'],
+            'done' => $sections['done'],
+            'sections' => $domainSections,
+            'stats' => $stats,
+        ];
+    }
+
+    private function normalizePhaseH3(string $header): string
+    {
+        $h = strtolower(trim($header));
+        if (str_contains($h, 'now') || str_contains($h, 'ahora') || str_contains($h, 'en curso')) return 'now';
+        if (str_contains($h, 'next') || str_contains($h, 'siguiente')) return 'next';
+        if (str_contains($h, 'later') || str_contains($h, 'futuro') || str_contains($h, 'ideas') || str_contains($h, 'backlog')) return 'later';
+        if (str_contains($h, 'done') || str_contains($h, 'completado') || str_contains($h, 'completed')) return 'done';
+        return 'unknown';
+    }
+
+    private function flushDomainItems(?string &$domain, ?string &$phase, array &$sections, array &$domainSections, array &$items): void
+    {
+        if ($domain !== null) {
+            $itemCount = count($items);
+            $doneCount = count(array_filter($items, fn($i) => ($i['status']['label'] ?? '') === 'Completado'));
+            $this->flushPhaseItems($phase, $sections, $items);
+            $domainSections[] = [
+                'name' => $domain,
+                'items' => [],
+                'itemCount' => $itemCount,
+                'doneCount' => $doneCount,
+                'progress' => $itemCount > 0 ? round(($doneCount / $itemCount) * 100) : 0,
+            ];
+        }
+        $domain = null;
+    }
+
+    private function flushPhaseItems(?string &$phase, array &$sections, array &$items): void
+    {
+        if ($phase !== null && isset($sections[$phase])) {
+            foreach ($items as $item) {
+                $entry = $item;
+                unset($entry['domain']);
+                $sections[$phase][] = $entry;
+            }
+        }
+        $items = [];
+        $phase = null;
+    }
+
+    private function parseStandardDoneCheckboxes(array $lines): array
+    {
+        $done = [];
+        $inDone = false;
+        foreach ($lines as $line) {
+            $t = trim($line);
+            if (preg_match('/^##\s+(.+)$/', $t, $m)) {
+                $h = strtolower(trim($m[1]));
+                $inDone = str_contains($h, 'completado') || str_contains($h, 'done') || str_contains($h, 'completed');
+                continue;
+            }
+            if ($inDone && preg_match('/^-\s*\[\s*(x|X)\s*\]\s*(.+)$/', $t, $m)) {
+                $done[] = ['item' => trim($m[2]), 'instance' => null];
+            }
+        }
+        return $done;
     }
 
     private function parseExtended(array $lines, string $projectName): array
@@ -367,6 +497,15 @@ class RoadmapParser
         }
         if (str_contains($header, 'completado') || str_contains($header, 'done') || str_contains($header, 'completed')) {
             return 'done';
+        }
+        if (preg_match('/fase\s*(\d+)/i', $header, $m)) {
+            $num = (int)$m[1];
+            if ($num <= 2) return 'now';
+            if ($num <= 4) return 'next';
+            return 'later';
+        }
+        if (str_contains($header, 'backlog') || str_contains($header, 'futuro')) {
+            return 'later';
         }
         return 'unknown';
     }

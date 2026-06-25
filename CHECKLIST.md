@@ -20,9 +20,12 @@
 - [x] R13 — Parser multi-formato (estándar + extendido 🧩 Nemesis)
 - [x] R14 — ProjectInfoReader (CHANGELOG, DILIGENCIA, ADR, SISTEMA, bugs, incidents, CHECKLIST)
 - [x] R15 — Dashboard enriquecido (badges: version, ADRs, bugs, stack, formato)
+- [x] R16 — Botón Refresh + Auto-refresh (toggle, countdown 15min)
+- [x] R17 — Ocultar proyectos (✕ en sidebar + restaurar desde "Mostrar ocultos")
+- [x] R18 — Agregar proyecto manual (modal + ruta libre)
 - [ ] R03 — Logs de horas: sistema de registro y lectura JSON
 - [ ] R04 — Estimador HS → días: cálculo según promedio diario
-- [ ] R05 — Dashboard UI: frontend completo
+- [ ] R05 — Dashboard UI: finalizar pulido visual y UX
 - [ ] R08 — Registro de horas desde el dashboard (UI)
 
 ### Documentación

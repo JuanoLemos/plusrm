@@ -6,9 +6,12 @@
 
 | ID | Item | Prioridad | Estado | Depende de |
 |----|------|-----------|--------|------------|
-| R03 | Logs de horas: sistema de registro y lectura JSON | P1 | 🟡 En progreso | R01 |
+| R03 | Logs de horas: sistema de registro y lectura JSON | P2 | 🔴 Pendiente | — |
 | R04 | Estimador HS → días: cálculo según promedio diario | P2 | 🔴 Pendiente | R03, R05 |
-| R05 | Dashboard UI: frontend completo con tablas, barras, badges y vista multi-formato | P2 | 🟡 En progreso | — |
+| R05 | Dashboard UI: finalizar pulido visual y UX | P3 | 🔴 Pendiente | — |
+| R16 | Botón Refresh + Auto-refresh cada 15 min | P1 | 🟡 En progreso | — |
+| R17 | Ocultar proyectos (✕ en sidebar + restaurar) | P1 | 🟡 En progreso | — |
+| R18 | Agregar proyecto manual (modal + ruta libre) | P1 | 🟡 En progreso | — |
 
 ## Siguiente (Next)
 
@@ -36,3 +39,6 @@
 | R13 — Parser multi-formato (estándar + extendido) | v0.2.0 |
 | R14 — ProjectInfoReader (7 docs: CHANGELOG, DILIGENCIA, ADR, SISTEMA, bugs, incidents, CHECKLIST) | v0.2.0 |
 | R15 — Dashboard enriquecido (badges: version, ADRs, bugs, stack) | v0.2.0 |
+| R16 — Botón Refresh + Auto-refresh 15 min | v0.3.0 |
+| R17 — Ocultar proyectos (✕ + restaurar desde "Mostrar ocultos") | v0.3.0 |
+| R18 — Agregar proyecto manual (modal + ruta libre) | v0.3.0 |

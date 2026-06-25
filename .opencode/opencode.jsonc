@@ -1,4 +1,5 @@
 {
+  "$schema": "https://opencode.ai/config.json",
   "instructions": [
     "Siempre responde en español.",
     "Antes de /version, ejecutar PRE-FLIGHT completo: staleness, salud, scope, template sync, cross-refs, variables.",

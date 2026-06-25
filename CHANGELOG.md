@@ -22,6 +22,15 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 - .opencode/themes/ sincronizado con 7 variantes nuevas (claro, oscuro, neon, verde, naranja, celeste, pastel)
 - 4 comandos stale sincronizados (CBP, doctor, explica, PENDING)
 - DILIGENCIA.md bump a v1.17.9
+
+### Added
+- Botón Refresh manual (🔄) en header
+- Auto-refresh cada 15 minutos con toggle ON/OFF y countdown
+- Ocultar proyectos (✕ en sidebar, persistente en data/settings.json)
+- Restaurar proyectos ocultos desde "Mostrar ocultos"
+- Agregar proyecto manual (modal con input de ruta libre)
+- API endpoint /api/settings.php (GET + POST para added/hidden paths)
+- Scanner acepta paths adicionales desde settings
 ### Changed
 ### Deprecated
 ### Removed
